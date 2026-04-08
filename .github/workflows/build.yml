@@ -67,6 +67,8 @@ jobs:
           copy RunPADS.exe release\
           copy README.md release\
           copy scripts\RunPADS.bat release\
+          copy scripts\Install.bat release\
+          copy scripts\Uninstall.bat release\
           dir release\
         shell: cmd
 
