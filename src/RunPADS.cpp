@@ -5,7 +5,7 @@
 
 // 默认 PADS 路径，可通过命令行参数覆盖
 #define DEFAULT_PADS_PATH                                                      \
-    "D:\\MentorGraphics\\PADSVX.2.4\\SDD_HOME\\common\\win32\\bin\\powerpcb.exe"
+    "D:\\MentorGraphics\\PADSVX.2.4\\SDD_HOME\\Programs\\powerpcb.exe"
 
 int main(int argc, char *argv[]) {
     STARTUPINFOA si;

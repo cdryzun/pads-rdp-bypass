@@ -5,7 +5,7 @@ title PADS RDP Bypass Launcher
 :: ============================================================
 ::  PADS 路径配置 - 请根据实际安装路径修改下面这一行
 :: ============================================================
-set "PADS_EXE=D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\powerpcb.exe"
+set "PADS_EXE=D:\MentorGraphics\PADSVX.2.4\SDD_HOME\Programs\powerpcb.exe"
 
 :: ============================================================
 ::  以下内容无需修改
