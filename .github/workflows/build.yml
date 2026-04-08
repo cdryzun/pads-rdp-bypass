@@ -23,11 +23,11 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      - name: Clone and Build Detours (static runtime)
+      - name: Clone and Build Detours
         run: |
           git clone https://github.com/microsoft/Detours.git
-          cd Detours/src
-          nmake DETOURS_TARGET_PROCESSOR=X86 CFLAGS="/W4 /WX /Zi /MT /Gy /Gm- /Zl /Od"
+          cd Detours\src
+          nmake DETOURS_TARGET_PROCESSOR=X86
         shell: cmd
 
       - name: Build RdpBypass.dll
@@ -36,7 +36,7 @@ jobs:
             /I Detours\include ^
             src\RdpBypass.cpp ^
             /Fe:RdpBypass.dll ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib libcmt.lib
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
         shell: cmd
 
       - name: Build RunPADS.exe
@@ -45,7 +45,19 @@ jobs:
             /I Detours\include ^
             src\RunPADS.cpp ^
             /Fe:RunPADS.exe ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib libcmt.lib
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+        shell: cmd
+
+      - name: Verify dependencies
+        run: |
+          echo === RdpBypass.dll dependencies ===
+          dumpbin /dependents RdpBypass.dll
+          echo === RunPADS.exe dependencies ===
+          dumpbin /dependents RunPADS.exe
+          echo === RdpBypass.dll headers ===
+          dumpbin /headers RdpBypass.dll | findstr "machine"
+          echo === RunPADS.exe headers ===
+          dumpbin /headers RunPADS.exe | findstr "machine"
         shell: cmd
 
       - name: Package release
