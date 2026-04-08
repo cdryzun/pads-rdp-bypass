@@ -44,11 +44,25 @@ int main(int argc, char *argv[]) {
         *sddSlash = '\0';
     }
 
+    // 从 SDD_HOME 推导 MGC_HOME（再上一级）
+    char mgcHome[MAX_PATH];
+    strncpy_s(mgcHome, MAX_PATH, sddHome, MAX_PATH);
+    char *mgcSlash = strrchr(mgcHome, '\\');
+    if (mgcSlash) {
+        *mgcSlash = '\0';
+    }
+
+    // 设置 PADS 必需的环境变量
+    SetEnvironmentVariableA("SDD_HOME", sddHome);
+    SetEnvironmentVariableA("MGC_HOME", sddHome);
+    SetEnvironmentVariableA("SDD_PLATFORM", "win32");
+
     // 将 PADS 依赖的 DLL 目录追加到 PATH 环境变量
     char extraPaths[4096];
     _snprintf_s(extraPaths, sizeof(extraPaths), _TRUNCATE,
-                "%s\\common\\win32\\lib;%s\\common\\win32\\bin;%s\\Programs",
-                sddHome, sddHome, sddHome);
+                "%s\\common\\win32\\lib;%s\\common\\win32\\bin;%s\\Programs;"
+                "%s\\pads\\win32\\bin",
+                sddHome, sddHome, sddHome, sddHome);
 
     char currentPath[8192];
     GetEnvironmentVariableA("PATH", currentPath, sizeof(currentPath));
@@ -62,6 +76,7 @@ int main(int argc, char *argv[]) {
     printf("[RunPADS] DLL:      %s\n", dllPath);
     printf("[RunPADS] WorkDir:  %s\n", workDir);
     printf("[RunPADS] SDD_HOME: %s\n", sddHome);
+    printf("[RunPADS] MGC_HOME: %s\n", sddHome);
     printf("[RunPADS] Launching with RDP bypass...\n");
 
     BOOL result = DetourCreateProcessWithDllExA(
