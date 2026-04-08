@@ -53,6 +53,7 @@ jobs:
           copy RdpBypass.dll release\
           copy RunPADS.exe release\
           copy README.md release\
+          copy scripts\RunPADS.bat release\
           dir release\
         shell: cmd
 

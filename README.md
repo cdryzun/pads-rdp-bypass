@@ -18,6 +18,7 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 |------|------|
 | `RunPADS.exe` | 启动器，负责创建进程并注入 DLL |
 | `RdpBypass.dll` | Hook DLL，拦截远程桌面检测 |
+| `RunPADS.bat` | 一键启动脚本，双击即用 |
 
 ## 使用方法
 
@@ -28,17 +29,29 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 - PADS 安装目录（如 `D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\`）
 - 任意你喜欢的位置
 
-### 2. 启动 PADS
+### 2. 配置路径
 
-通过 RDP 远程连接到目标电脑后，有两种启动方式：
+用记事本打开 `RunPADS.bat`，修改第 7 行的 PADS 路径为你的实际安装路径：
 
-**方式一：指定 PADS 路径（推荐）**
+```bat
+set "PADS_EXE=D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
+```
+
+### 3. 启动 PADS
+
+通过 RDP 远程连接到目标电脑后，有三种启动方式：
+
+**方式一：双击 BAT 脚本（推荐，最简单）**
+
+直接双击 `RunPADS.bat`，脚本会自动检查文件是否齐全并启动 PADS。
+
+**方式二：命令行指定路径**
 
 ```cmd
 RunPADS.exe "D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
 ```
 
-**方式二：使用默认路径**
+**方式三：使用默认路径**
 
 直接双击 `RunPADS.exe`，将使用编译时的默认路径：
 
@@ -46,17 +59,13 @@ RunPADS.exe "D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
 C:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe
 ```
 
-### 3. 创建快捷方式（可选）
+### 4. 创建快捷方式（可选）
 
 为了方便日常使用，可以创建一个桌面快捷方式：
 
-1. 右键桌面 → 新建 → 快捷方式
-2. 位置输入：
-   ```
-   "C:\你的路径\RunPADS.exe" "D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
-   ```
-3. 名称填：`PADS (RDP模式)`
-4. 以后双击快捷方式即可
+1. 右键 `RunPADS.bat` → 发送到 → 桌面快捷方式
+2. 重命名为 `PADS (RDP模式)`
+3. 以后双击快捷方式即可
 
 ## 启动输出示例
 
