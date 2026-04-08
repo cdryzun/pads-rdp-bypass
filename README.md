@@ -26,7 +26,7 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 
 将 `RunPADS.exe` 和 `RdpBypass.dll` 放在**同一个文件夹**中。可以放在：
 - 桌面
-- PADS 安装目录（如 `D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\`）
+- PADS 安装目录（如 `D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\`）
 - 任意你喜欢的位置
 
 ### 2. 配置路径
@@ -34,7 +34,7 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 用记事本打开 `RunPADS.bat`，修改第 7 行的 PADS 路径为你的实际安装路径：
 
 ```bat
-set "PADS_EXE=D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
+set "PADS_EXE=D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\powerpcb.exe"
 ```
 
 ### 3. 启动 PADS
@@ -48,7 +48,7 @@ set "PADS_EXE=D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
 **方式二：命令行指定路径**
 
 ```cmd
-RunPADS.exe "D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe"
+RunPADS.exe "D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\powerpcb.exe"
 ```
 
 **方式三：使用默认路径**
@@ -70,9 +70,9 @@ C:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe
 ## 启动输出示例
 
 ```
-[RunPADS] Target: D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs\powerpcb.exe
+[RunPADS] Target: D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\powerpcb.exe
 [RunPADS] DLL:    C:\Users\你的用户名\Desktop\RdpBypass.dll
-[RunPADS] WorkDir: D:\MentorGraphics\PADSVX.2.8\SDD_HOME\Programs
+[RunPADS] WorkDir: D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin
 [RunPADS] Launching with RDP bypass...
 [RunPADS] Success! PADS PID: 12345
 ```
