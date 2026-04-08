@@ -47,16 +47,19 @@ jobs:
             /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
         shell: cmd
 
-      - name: Verify outputs
+      - name: Package release
         run: |
-          dir RdpBypass.dll
-          dir RunPADS.exe
+          mkdir release
+          copy RdpBypass.dll release\
+          copy RunPADS.exe release\
+          copy README.md release\
+          dir release\
+        shell: cmd
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pads-rdp-bypass-${{ matrix.arch }}
           path: |
-            RdpBypass.dll
-            RunPADS.exe
+            release/
           retention-days: 90
