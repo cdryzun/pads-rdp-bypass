@@ -1,3 +1,4 @@
+# Build artifacts
 *.obj
 *.lib
 *.exp
@@ -5,4 +6,19 @@
 *.exe
 *.pdb
 *.ilk
+*.res
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+Debug/
+Release/
+x64/
+Win32/
+*.vcxproj.user
+
+# Detours (cloned during CI build)
 Detours/

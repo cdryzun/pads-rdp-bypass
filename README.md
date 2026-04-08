@@ -10,7 +10,7 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 
 ## 下载
 
-前往本仓库的 [Actions](../../actions) 页面，点击最新一次成功的构建，下载 **pads-rdp-bypass-x86** 产物压缩包。
+前往本仓库的 [Actions](https://github.com/cdryzun/pads-rdp-bypass/actions) 页面，点击最新一次成功的构建，下载 **pads-rdp-bypass-x86** 产物压缩包。
 
 压缩包内含：
 
@@ -80,9 +80,10 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 
 - **幂等安装**：多次运行 Install.bat 不会重复配置
 - **多用户支持**：RDS 环境下所有用户会话均生效
-- **100% 注入成功率**：DLL 在进程初始化阶段加载，早于 License 检查
-- **零侵入**：不修改 PADS 任何文件，卸载后完全恢复
-- **最小副作用**：DLL 仅拦截 `SM_REMOTESESSION` 查询，其他调用透传
+- **进程初始化阶段加载**：DLL 通过 AppInit_DLLs 在进程初始化时加载，早于 License 检查
+- **不修改 PADS 文件**：仅修改注册表配置，卸载时自动恢复备份
+- **注册表备份**：安装时自动备份原始值，卸载时从备份恢复
+- **影响范围说明**：DLL 会被加载到所有 32 位 user32.dll 进程，但仅拦截 `SM_REMOTESESSION` 查询，对其他程序无功能影响
 
 ## 常见问题
 

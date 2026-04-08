@@ -21,11 +21,14 @@ if %errorlevel% neq 0 (
 set "INSTALL_DIR=C:\RdpBypass"
 set "DLL_NAME=RdpBypass.dll"
 set "DLL_PATH=%INSTALL_DIR%\%DLL_NAME%"
+set "BACKUP_FILE=%INSTALL_DIR%\backup.reg.txt"
 set "SCRIPT_DIR=%~dp0"
 set "SOURCE_DLL=%SCRIPT_DIR%%DLL_NAME%"
 
 :: 32 位 AppInit_DLLs 注册表路径
 set "REG_KEY=HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Windows"
+
+set "HAS_ERROR=0"
 
 echo ============================================================
 echo   PADS RDP Bypass - Installer
@@ -52,9 +55,35 @@ if not exist "%SOURCE_DLL%" (
 :: ============================================================
 if not exist "%INSTALL_DIR%" (
     mkdir "%INSTALL_DIR%"
+    if !errorlevel! neq 0 (
+        echo [错误] 创建目录失败: %INSTALL_DIR%
+        set "HAS_ERROR=1"
+        goto :verify
+    )
     echo [安装] 创建目录: %INSTALL_DIR%
 ) else (
     echo [跳过] 目录已存在: %INSTALL_DIR%
+)
+
+:: ============================================================
+::  备份当前注册表值（仅首次安装时备份）
+:: ============================================================
+if not exist "%BACKUP_FILE%" (
+    echo # Registry backup created by PADS RDP Bypass Installer> "%BACKUP_FILE%"
+    echo # Date: %date% %time%>> "%BACKUP_FILE%"
+
+    for /f "tokens=2*" %%a in ('reg query "%REG_KEY%" /v AppInit_DLLs 2^>nul ^| findstr AppInit_DLLs') do (
+        echo AppInit_DLLs=%%b>> "%BACKUP_FILE%"
+    )
+    for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v LoadAppInit_DLLs 2^>nul ^| findstr LoadAppInit_DLLs') do (
+        echo LoadAppInit_DLLs=%%a>> "%BACKUP_FILE%"
+    )
+    for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v RequireSignedAppInit_DLLs 2^>nul ^| findstr RequireSignedAppInit_DLLs') do (
+        echo RequireSignedAppInit_DLLs=%%a>> "%BACKUP_FILE%"
+    )
+    echo [安装] 已备份原始注册表值: %BACKUP_FILE%
+) else (
+    echo [跳过] 注册表备份已存在
 )
 
 :: ============================================================
@@ -63,6 +92,11 @@ if not exist "%INSTALL_DIR%" (
 fc /b "%SOURCE_DLL%" "%DLL_PATH%" >nul 2>&1
 if %errorlevel% neq 0 (
     copy /y "%SOURCE_DLL%" "%DLL_PATH%" >nul
+    if !errorlevel! neq 0 (
+        echo [错误] 复制 DLL 失败
+        set "HAS_ERROR=1"
+        goto :verify
+    )
     echo [安装] 复制 DLL: %DLL_PATH%
 ) else (
     echo [跳过] DLL 已是最新: %DLL_PATH%
@@ -80,7 +114,12 @@ if %errorlevel% neq 0 (
     ) else (
         reg add "%REG_KEY%" /v AppInit_DLLs /t REG_SZ /d "%DLL_PATH% %CURRENT_APPINIT%" /f >nul
     )
-    echo [安装] 注册表 AppInit_DLLs: %DLL_PATH%
+    if !errorlevel! neq 0 (
+        echo [错误] 写入 AppInit_DLLs 失败
+        set "HAS_ERROR=1"
+    ) else (
+        echo [安装] 注册表 AppInit_DLLs: %DLL_PATH%
+    )
 ) else (
     echo [跳过] AppInit_DLLs 已包含 DLL 路径
 )
@@ -92,7 +131,12 @@ for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v LoadAppInit_DLLs 2^>nul ^| f
 
 if not "%CURRENT_LOAD%"=="0x1" (
     reg add "%REG_KEY%" /v LoadAppInit_DLLs /t REG_DWORD /d 1 /f >nul
-    echo [安装] 注册表 LoadAppInit_DLLs: 1
+    if !errorlevel! neq 0 (
+        echo [错误] 写入 LoadAppInit_DLLs 失败
+        set "HAS_ERROR=1"
+    ) else (
+        echo [安装] 注册表 LoadAppInit_DLLs: 1
+    )
 ) else (
     echo [跳过] LoadAppInit_DLLs 已为 1
 )
@@ -104,7 +148,12 @@ for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v RequireSignedAppInit_DLLs 2^
 
 if not "%CURRENT_SIGNED%"=="0x0" (
     reg add "%REG_KEY%" /v RequireSignedAppInit_DLLs /t REG_DWORD /d 0 /f >nul
-    echo [安装] 注册表 RequireSignedAppInit_DLLs: 0
+    if !errorlevel! neq 0 (
+        echo [错误] 写入 RequireSignedAppInit_DLLs 失败
+        set "HAS_ERROR=1"
+    ) else (
+        echo [安装] 注册表 RequireSignedAppInit_DLLs: 0
+    )
 ) else (
     echo [跳过] RequireSignedAppInit_DLLs 已为 0
 )
@@ -112,19 +161,18 @@ if not "%CURRENT_SIGNED%"=="0x0" (
 :: ============================================================
 ::  验证
 :: ============================================================
+:verify
 echo.
 echo ============================================================
 echo   验证安装结果
 echo ============================================================
 echo.
 
-set "VERIFY_OK=1"
-
 if exist "%DLL_PATH%" (
     echo   [OK] DLL 文件存在
 ) else (
     echo   [NG] DLL 文件不存在!
-    set "VERIFY_OK=0"
+    set "HAS_ERROR=1"
 )
 
 for /f "tokens=2*" %%a in ('reg query "%REG_KEY%" /v AppInit_DLLs 2^>nul ^| findstr AppInit_DLLs') do (
@@ -133,7 +181,7 @@ for /f "tokens=2*" %%a in ('reg query "%REG_KEY%" /v AppInit_DLLs 2^>nul ^| find
         echo   [OK] AppInit_DLLs 已配置
     ) else (
         echo   [NG] AppInit_DLLs 未正确配置!
-        set "VERIFY_OK=0"
+        set "HAS_ERROR=1"
     )
 )
 
@@ -142,7 +190,7 @@ for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v LoadAppInit_DLLs 2^>nul ^| f
         echo   [OK] LoadAppInit_DLLs = 1
     ) else (
         echo   [NG] LoadAppInit_DLLs != 1
-        set "VERIFY_OK=0"
+        set "HAS_ERROR=1"
     )
 )
 
@@ -151,16 +199,16 @@ for /f "tokens=3" %%a in ('reg query "%REG_KEY%" /v RequireSignedAppInit_DLLs 2^
         echo   [OK] RequireSignedAppInit_DLLs = 0
     ) else (
         echo   [NG] RequireSignedAppInit_DLLs != 0
-        set "VERIFY_OK=0"
+        set "HAS_ERROR=1"
     )
 )
 
 echo.
-if "%VERIFY_OK%"=="1" (
+if "%HAS_ERROR%"=="0" (
     echo   安装完成! 现在可以通过 RDP 正常启动 PADS 了。
-    echo   无需使用 RunPADS.exe，直接双击 PADS 快捷方式即可。
+    echo   无需使用启动器，直接双击 PADS 快捷方式即可。
 ) else (
-    echo   安装存在异常，请检查上方 [NG] 项目。
+    echo   安装过程中存在错误，请检查上方 [错误] 和 [NG] 项目。
 )
 
 echo.

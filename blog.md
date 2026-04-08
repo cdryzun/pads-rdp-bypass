@@ -4,7 +4,7 @@ date: 2026-04-09T00:00:00+08:00
 draft: false
 tags: ["Windows", "API Hook", "Detours", "PADS", "RDP", "GitHub Actions", "CI/CD"]
 categories: ["逆向工程"]
-description: "记录通过 Microsoft Detours Hook GetSystemMetrics API，绕过 PADS FlexNet 远程桌面检测的完整工程实践。经历三次失败方案后，最终采用 AppInit_DLLs 注册表注入实现 100% 可靠的解决方案。"
+description: "记录通过 Microsoft Detours Hook GetSystemMetrics API，绕过 PADS FlexNet 远程桌面检测的完整工程实践。经历三次失败方案后，最终采用 AppInit_DLLs 注册表注入实现可靠的解决方案。"
 ---
 
 Author: [cdryzun](https://github.com/cdryzun)
@@ -227,7 +227,7 @@ HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Windows
 | 注入时机 | 进程创建时 | 进程创建时 | 进程运行后 | **进程初始化前** |
 | 跳板兼容 | CRT 冲突 | 环境缺失 | 不涉及 | **无冲突** |
 | 多用户 RDS | 不支持 | 不支持 | 有歧义 | **全部生效** |
-| 成功率 | 低 | 低 | 中 | **100%** |
+| 成功率 | 低 | 低 | 中 | **高** |
 | 用户感知 | 需启动器 | 需启动器 | 需启动器 | **零操作** |
 
 验证注册表配置是否生效：
@@ -333,7 +333,7 @@ mfc120.dll           ← VS2013 MFC 库
 
 ### 4.2 GitHub Actions 工作流
 
-利用 GitHub Actions 的 `windows-latest` Runner，推代码就自动编译：
+利用 GitHub Actions 的 `windows-latest` Runner，推代码就自动编译。以下为核心步骤示意（完整配置见仓库 `.github/workflows/build.yml`）：
 
 ```yaml
 name: Build Windows Binaries

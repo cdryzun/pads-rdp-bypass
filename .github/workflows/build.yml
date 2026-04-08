@@ -23,9 +23,9 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      - name: Clone and Build Detours
+      - name: Clone and Build Detours (pinned v4.0.1)
         run: |
-          git clone https://github.com/microsoft/Detours.git
+          git clone --branch v4.0.1 --depth 1 https://github.com/microsoft/Detours.git
           cd Detours\src
           nmake DETOURS_TARGET_PROCESSOR=X86
         shell: cmd
@@ -39,12 +39,32 @@ jobs:
             /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
         shell: cmd
 
-      - name: Verify dependencies
+      - name: Verify build artifacts
         run: |
-          echo === RdpBypass.dll dependencies ===
+          echo === Verify RdpBypass.dll exists ===
+          if not exist RdpBypass.dll (
+            echo FAIL: RdpBypass.dll not found
+            exit /b 1
+          )
+
+          echo === Verify architecture is x86 ===
+          dumpbin /headers RdpBypass.dll | findstr "14C machine" >nul
+          if %errorlevel% neq 0 (
+            echo FAIL: RdpBypass.dll is not x86
+            exit /b 1
+          )
+          echo PASS: architecture is x86
+
+          echo === Verify dependencies are system-only ===
+          dumpbin /dependents RdpBypass.dll | findstr /i "VCRUNTIME MSVCP MSVCR" >nul
+          if %errorlevel% equ 0 (
+            echo FAIL: RdpBypass.dll has VC runtime dependency
+            exit /b 1
+          )
+          echo PASS: no VC runtime dependency
+
+          echo === Full dependency list ===
           dumpbin /dependents RdpBypass.dll
-          echo === RdpBypass.dll headers ===
-          dumpbin /headers RdpBypass.dll | findstr "machine"
         shell: cmd
 
       - name: Package release
