@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
-// 默认 PADS 路径，可通过命令行参数覆盖
+// 默认 PADS 路径（EEWrapper 跳板），可通过命令行参数覆盖
 #define DEFAULT_PADS_PATH                                                      \
-    "D:\\MentorGraphics\\PADSVX.2.4\\SDD_HOME\\Programs\\powerpcb.exe"
+    "D:\\MentorGraphics\\PADSVX.2.4\\SDD_HOME\\common\\win32\\bin\\powerpcb.exe"
 
 int main(int argc, char *argv[]) {
     STARTUPINFOA si;
@@ -35,21 +35,19 @@ int main(int argc, char *argv[]) {
         *lastSlashWork = '\0';
     }
 
-    // 从 EXE 路径推导 SDD_HOME（向上两级目录）
-    // 例: D:\...\SDD_HOME\Programs\powerpcb.exe -> D:\...\SDD_HOME
+    // 从 EXE 路径中查找 SDD_HOME 目录
+    // 支持任意深度: ...\SDD_HOME\common\win32\bin\powerpcb.exe
+    //              ...\SDD_HOME\Programs\powerpcb.exe
     char sddHome[MAX_PATH];
-    strncpy_s(sddHome, MAX_PATH, workDir, MAX_PATH);
-    char *sddSlash = strrchr(sddHome, '\\');
-    if (sddSlash) {
-        *sddSlash = '\0';
-    }
-
-    // 从 SDD_HOME 推导 MGC_HOME（再上一级）
-    char mgcHome[MAX_PATH];
-    strncpy_s(mgcHome, MAX_PATH, sddHome, MAX_PATH);
-    char *mgcSlash = strrchr(mgcHome, '\\');
-    if (mgcSlash) {
-        *mgcSlash = '\0';
+    strncpy_s(sddHome, MAX_PATH, exePath, MAX_PATH);
+    char *sddMarker = strstr(sddHome, "\\SDD_HOME\\");
+    if (sddMarker) {
+        sddMarker[9] = '\0'; // 截断到 \SDD_HOME
+    } else {
+        // fallback: 向上两级
+        strncpy_s(sddHome, MAX_PATH, workDir, MAX_PATH);
+        char *s = strrchr(sddHome, '\\');
+        if (s) *s = '\0';
     }
 
     // 设置 PADS 必需的环境变量
