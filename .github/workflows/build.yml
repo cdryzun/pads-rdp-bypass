@@ -1,0 +1,62 @@
+name: Build Windows Binaries
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # 支持手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86] # PADS 是 32 位程序，只编译 x86
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC (${{ matrix.arch }})
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Clone and Build Detours
+        run: |
+          git clone https://github.com/microsoft/Detours.git
+          cd Detours/src
+          nmake DETOURS_TARGET_PROCESSOR=X86
+
+      - name: Build RdpBypass.dll
+        run: |
+          cl /nologo /W4 /O2 /LD ^
+            /I Detours\include ^
+            src\RdpBypass.cpp ^
+            /Fe:RdpBypass.dll ^
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+        shell: cmd
+
+      - name: Build RunPADS.exe
+        run: |
+          cl /nologo /W4 /O2 ^
+            /I Detours\include ^
+            src\RunPADS.cpp ^
+            /Fe:RunPADS.exe ^
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+        shell: cmd
+
+      - name: Verify outputs
+        run: |
+          dir RdpBypass.dll
+          dir RunPADS.exe
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pads-rdp-bypass-${{ matrix.arch }}
+          path: |
+            RdpBypass.dll
+            RunPADS.exe
+          retention-days: 90
