@@ -23,28 +23,29 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      - name: Clone and Build Detours
+      - name: Clone and Build Detours (static runtime)
         run: |
           git clone https://github.com/microsoft/Detours.git
           cd Detours/src
-          nmake DETOURS_TARGET_PROCESSOR=X86
+          nmake DETOURS_TARGET_PROCESSOR=X86 CFLAGS="/W4 /WX /Zi /MT /Gy /Gm- /Zl /Od"
+        shell: cmd
 
       - name: Build RdpBypass.dll
         run: |
-          cl /nologo /W4 /O2 /LD ^
+          cl /nologo /W4 /O2 /MT /LD ^
             /I Detours\include ^
             src\RdpBypass.cpp ^
             /Fe:RdpBypass.dll ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib libcmt.lib
         shell: cmd
 
       - name: Build RunPADS.exe
         run: |
-          cl /nologo /W4 /O2 ^
+          cl /nologo /W4 /O2 /MT ^
             /I Detours\include ^
             src\RunPADS.cpp ^
             /Fe:RunPADS.exe ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib libcmt.lib
         shell: cmd
 
       - name: Package release
