@@ -39,34 +39,19 @@ jobs:
             /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
         shell: cmd
 
-      - name: Build RunPADS.exe
-        run: |
-          cl /nologo /W4 /O2 /MT ^
-            /I Detours\include ^
-            src\RunPADS.cpp ^
-            /Fe:RunPADS.exe ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib psapi.lib
-        shell: cmd
-
       - name: Verify dependencies
         run: |
           echo === RdpBypass.dll dependencies ===
           dumpbin /dependents RdpBypass.dll
-          echo === RunPADS.exe dependencies ===
-          dumpbin /dependents RunPADS.exe
           echo === RdpBypass.dll headers ===
           dumpbin /headers RdpBypass.dll | findstr "machine"
-          echo === RunPADS.exe headers ===
-          dumpbin /headers RunPADS.exe | findstr "machine"
         shell: cmd
 
       - name: Package release
         run: |
           mkdir release
           copy RdpBypass.dll release\
-          copy RunPADS.exe release\
           copy README.md release\
-          copy scripts\RunPADS.bat release\
           copy scripts\Install.bat release\
           copy scripts\Uninstall.bat release\
           dir release\

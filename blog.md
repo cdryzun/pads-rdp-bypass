@@ -72,17 +72,12 @@ int result = GetSystemMetrics(SM_REMOTESESSION);
 
 API Hook 是一种在不修改目标程序二进制的前提下，拦截系统 API 调用的技术。被 Hook 的函数会先经过我们写的"替身函数"，在那里可以修改参数、篡改返回值，或者直接放行到原始系统函数。
 
-```
-┌─────────────┐                    ┌──────────────────┐
-│ powerpcb.exe│─── GetSystemMetrics│  FakeFunction    │
-│             │    (SM_REMOTESESSION) │  return 0;    │
-└─────────────┘                    └──────┬───────────┘
-                                          │ 其他参数
-                                   ┌──────▼───────────┐
-                                   │  TrueFunction    │
-                                   │  正常返回         │
-                                   └──────────────────┘
-```
+{{< mermaid >}}
+flowchart LR
+    A[powerpcb.exe] -->|"GetSystemMetrics(nIndex)"| B{FakeGetSystemMetrics}
+    B -->|"nIndex == SM_REMOTESESSION"| C["return 0\n(伪装本地)"]
+    B -->|"其他参数"| D["TrueGetSystemMetrics(nIndex)\n正常返回"]
+{{< /mermaid >}}
 
 [Microsoft Detours](https://github.com/microsoft/Detours) 是微软官方维护的 Hook 库。选它而不是 MinHook、EasyHook 的理由：
 
@@ -268,24 +263,28 @@ PADS 安装目录里有两个 `powerpcb.exe`：
 
 用户双击的快捷方式指向 24KB 的跳板。跳板负责初始化运行环境后启动真正的主程序：
 
-```
-用户双击快捷方式
-    │
-    ▼
-common\win32\bin\powerpcb.exe  (24KB 跳板)
-    │  读取 SDD_HOME / MGC_HOME
-    │  通过 SDDEnv.dll 初始化环境
-    │  配置 DLL 搜索路径
-    │
-    ▼
-Programs\powerpcb.exe  (38MB 主程序)
-    │  加载 xf_Os.dll, mfc120.dll ...
-    │  FlexNet License 检查  ←  GetSystemMetrics(SM_REMOTESESSION)
-    │  启动 GUI
-    │
-    ▼
-PADS 正常运行
-```
+{{< mermaid >}}
+flowchart TD
+    A["用户双击 PADS 快捷方式"] --> B
+
+    subgraph stub ["EEWrapper 跳板 (24KB)"]
+        B["common\win32\bin\powerpcb.exe"] --> B1["读取 SDD_HOME / MGC_HOME"]
+        B1 --> B2["通过 SDDEnv.dll 初始化环境"]
+        B2 --> B3["配置 DLL 搜索路径"]
+    end
+
+    B3 --> C
+
+    subgraph main ["PADS 主程序 (38MB)"]
+        C["Programs\powerpcb.exe"] --> C1["加载 xf_Os.dll, mfc120.dll ..."]
+        C1 --> C2["FlexNet License 检查"]
+        C2 --> C3["启动 GUI"]
+    end
+
+    C2 -.->|"GetSystemMetrics\n(SM_REMOTESESSION)"| D{{"Hook 拦截点"}}
+
+    C3 --> E["PADS 正常运行"]
+{{< /mermaid >}}
 
 ### 3.2 EEWrapper 跳板的二进制分析
 

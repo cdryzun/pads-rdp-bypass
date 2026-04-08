@@ -19,8 +19,6 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 | `RdpBypass.dll` | Hook DLL，拦截远程桌面检测 |
 | `Install.bat` | 一键安装脚本（需管理员权限） |
 | `Uninstall.bat` | 一键卸载脚本（需管理员权限） |
-| `RunPADS.bat` | 备用：手动启动脚本 |
-| `RunPADS.exe` | 备用：手动启动器 |
 
 ## 安装方法（推荐）
 
@@ -85,18 +83,6 @@ PADS 启动时，FlexNet 许可系统会调用 `GetSystemMetrics(SM_REMOTESESSIO
 - **100% 注入成功率**：DLL 在进程初始化阶段加载，早于 License 检查
 - **零侵入**：不修改 PADS 任何文件，卸载后完全恢复
 - **最小副作用**：DLL 仅拦截 `SM_REMOTESESSION` 查询，其他调用透传
-
-## 备用方式：手动启动
-
-如果不想修改注册表，也可以用 `RunPADS.exe` 手动启动：
-
-```cmd
-RunPADS.exe "D:\MentorGraphics\PADSVX.2.4\SDD_HOME\common\win32\bin\powerpcb.exe"
-```
-
-或修改 `RunPADS.bat` 中的路径后双击运行。
-
-> 注意：手动方式在多用户 RDS 环境下可能存在注入时机问题，推荐使用 Install.bat 安装方式。
 
 ## 常见问题
 
