@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <tlhelp32.h>
+#include <psapi.h>
 
 // 默认 PADS 跳板路径，可通过命令行参数覆盖
 #define DEFAULT_PADS_PATH                                                      \
