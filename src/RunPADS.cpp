@@ -9,7 +9,36 @@
 #define DEFAULT_PADS_PATH                                                      \
     "D:\\MentorGraphics\\PADSVX.2.4\\SDD_HOME\\common\\win32\\bin\\powerpcb.exe"
 
-// 等待真正的 powerpcb.exe 进程出现（内存 > 阈值）
+// 收集当前所有 powerpcb.exe 的 PID
+#define MAX_EXISTING 64
+static DWORD g_existingPids[MAX_EXISTING];
+static int g_existingCount = 0;
+
+static void SnapshotExistingProcesses() {
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return;
+
+    PROCESSENTRY32 pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32First(snap, &pe)) {
+        do {
+            if (_stricmp(pe.szExeFile, "powerpcb.exe") == 0 &&
+                g_existingCount < MAX_EXISTING) {
+                g_existingPids[g_existingCount++] = pe.th32ProcessID;
+            }
+        } while (Process32Next(snap, &pe));
+    }
+    CloseHandle(snap);
+}
+
+static BOOL IsExistingPid(DWORD pid) {
+    for (int i = 0; i < g_existingCount; i++) {
+        if (g_existingPids[i] == pid) return TRUE;
+    }
+    return FALSE;
+}
+
+// 等待新的 powerpcb.exe 进程出现（排除启动前已存在的）
 // 返回进程 PID，超时返回 0
 static DWORD WaitForRealProcess(DWORD stubPid, int timeoutMs) {
     int elapsed = 0;
@@ -27,9 +56,10 @@ static DWORD WaitForRealProcess(DWORD stubPid, int timeoutMs) {
         pe.dwSize = sizeof(pe);
         if (Process32First(snap, &pe)) {
             do {
-                // 找 powerpcb.exe 但排除跳板自身
+                // 找 powerpcb.exe，排除跳板和已存在的旧进程
                 if (_stricmp(pe.szExeFile, "powerpcb.exe") == 0 &&
-                    pe.th32ProcessID != stubPid) {
+                    pe.th32ProcessID != stubPid &&
+                    !IsExistingPid(pe.th32ProcessID)) {
                     // 检查内存占用 > 10MB 表示是真正的主程序
                     HANDLE proc = OpenProcess(
                         PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE,
@@ -117,6 +147,10 @@ int main(int argc, char *argv[]) {
 
     printf("[RunPADS] Target: %s\n", exePath);
     printf("[RunPADS] DLL:    %s\n", dllPath);
+
+    // 记录启动前已存在的 powerpcb.exe 进程
+    SnapshotExistingProcesses();
+    printf("[RunPADS] Existing powerpcb processes: %d\n", g_existingCount);
 
     // 第一步：正常启动跳板程序（不注入）
     printf("[RunPADS] Starting PADS launcher...\n");
