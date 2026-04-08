@@ -35,9 +35,33 @@ int main(int argc, char *argv[]) {
         *lastSlashWork = '\0';
     }
 
-    printf("[RunPADS] Target: %s\n", exePath);
-    printf("[RunPADS] DLL:    %s\n", dllPath);
-    printf("[RunPADS] WorkDir: %s\n", workDir);
+    // 从 EXE 路径推导 SDD_HOME（向上两级目录）
+    // 例: D:\...\SDD_HOME\Programs\powerpcb.exe -> D:\...\SDD_HOME
+    char sddHome[MAX_PATH];
+    strncpy_s(sddHome, MAX_PATH, workDir, MAX_PATH);
+    char *sddSlash = strrchr(sddHome, '\\');
+    if (sddSlash) {
+        *sddSlash = '\0';
+    }
+
+    // 将 PADS 依赖的 DLL 目录追加到 PATH 环境变量
+    char extraPaths[4096];
+    _snprintf_s(extraPaths, sizeof(extraPaths), _TRUNCATE,
+                "%s\\common\\win32\\lib;%s\\common\\win32\\bin;%s\\Programs",
+                sddHome, sddHome, sddHome);
+
+    char currentPath[8192];
+    GetEnvironmentVariableA("PATH", currentPath, sizeof(currentPath));
+
+    char newPath[16384];
+    _snprintf_s(newPath, sizeof(newPath), _TRUNCATE, "%s;%s", extraPaths,
+                currentPath);
+    SetEnvironmentVariableA("PATH", newPath);
+
+    printf("[RunPADS] Target:   %s\n", exePath);
+    printf("[RunPADS] DLL:      %s\n", dllPath);
+    printf("[RunPADS] WorkDir:  %s\n", workDir);
+    printf("[RunPADS] SDD_HOME: %s\n", sddHome);
     printf("[RunPADS] Launching with RDP bypass...\n");
 
     BOOL result = DetourCreateProcessWithDllExA(
