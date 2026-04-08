@@ -45,7 +45,7 @@ jobs:
             /I Detours\include ^
             src\RunPADS.cpp ^
             /Fe:RunPADS.exe ^
-            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib
+            /link /LIBPATH:Detours\lib.X86 detours.lib user32.lib kernel32.lib psapi.lib
         shell: cmd
 
       - name: Verify dependencies
