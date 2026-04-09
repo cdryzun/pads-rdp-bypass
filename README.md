@@ -6,6 +6,8 @@
 
 **一键安装，零配置使用，支持多用户 RDS。**
 
+**已验证版本**：PADS VX.2.4
+
 ---
 
 ## 为什么需要这个工具？
@@ -91,6 +93,8 @@ int WINAPI FakeGetSystemMetrics(int nIndex) {
 | Hook 目标 | `GetSystemMetrics(SM_REMOTESESSION)` → 返回 `0` |
 | 编译参数 | MSVC `/MT /O2 /W4`，静态链接，无 VC++ 运行时依赖 |
 | CI/CD | GitHub Actions，`windows-latest` + MSVC x86 |
+| 已验证 PADS 版本 | PADS VX.2.4 (Siemens EDA / Mentor Graphics) |
+| 已验证 Windows | Windows Server 2022 (20348) |
 
 ## 常见问题
 
