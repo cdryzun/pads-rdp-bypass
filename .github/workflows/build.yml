@@ -3,6 +3,7 @@ name: Build Windows Binaries
 on:
   push:
     branches: [main]
+    tags: ["v*"] # tag 推送时触发 Release
   pull_request:
     branches: [main]
   workflow_dispatch: # 支持手动触发
@@ -84,3 +85,28 @@ jobs:
           path: |
             release/
           retention-days: 90
+
+      - name: Create release zip
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          powershell Compress-Archive -Path release\* -DestinationPath pads-rdp-bypass-${{ matrix.arch }}.zip
+        shell: cmd
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pads-rdp-bypass-${{ matrix.arch }}.zip
+          generate_release_notes: true
+          body: |
+            ## PADS RDP Bypass ${{ github.ref_name }}
+
+            解压后右键 `Install.bat` 以管理员身份运行即可。
+
+            ### 产物清单
+            | 文件 | 说明 |
+            |------|------|
+            | `RdpBypass.dll` | Hook DLL (x86, 静态链接, 仅依赖 kernel32 + user32) |
+            | `Install.bat` | 一键安装（幂等，自动备份注册表） |
+            | `Uninstall.bat` | 一键卸载（从备份恢复） |
+            | `README.md` | 使用说明 |
