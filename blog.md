@@ -75,8 +75,8 @@ API Hook 是一种在不修改目标程序二进制的前提下，拦截系统 A
 {{< mermaid >}}
 flowchart LR
     A[powerpcb.exe] -->|"GetSystemMetrics(nIndex)"| B{FakeGetSystemMetrics}
-    B -->|"nIndex == SM_REMOTESESSION"| C["return 0\n(伪装本地)"]
-    B -->|"其他参数"| D["TrueGetSystemMetrics(nIndex)\n正常返回"]
+    B -->|"nIndex == SM_REMOTESESSION"| C["return 0<br/>(伪装本地)"]
+    B -->|"其他参数"| D["TrueGetSystemMetrics(nIndex)<br/>正常返回"]
 {{< /mermaid >}}
 
 [Microsoft Detours](https://github.com/microsoft/Detours) 是微软官方维护的 Hook 库。选它而不是 MinHook、EasyHook 的理由：
@@ -281,7 +281,7 @@ flowchart TD
         C2 --> C3["启动 GUI"]
     end
 
-    C2 -.->|"GetSystemMetrics\n(SM_REMOTESESSION)"| D{{"Hook 拦截点"}}
+    C2 -.->|"GetSystemMetrics<br/>(SM_REMOTESESSION)"| D{{"Hook 拦截点"}}
 
     C3 --> E["PADS 正常运行"]
 {{< /mermaid >}}
